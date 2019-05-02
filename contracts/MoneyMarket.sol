@@ -1579,8 +1579,6 @@ contract MoneyMarket is Exponential, SafeToken {
         if (err != Error.NO_ERROR) {
             return fail(err, FailureInfo.LIQUIDATE_ACCUMULATED_SUPPLY_BALANCE_CALCULATION_FAILED_BORROWER_COLLATERAL_ASSET);
         }
-//==================//==================//==================//==================//==================//==================//==================//==================//==================
-
 
         // Liquidator may or may not already have some collateral asset.
         // If they do, we need to accumulate interest on it before adding the seized collateral to it.
@@ -1590,7 +1588,6 @@ contract MoneyMarket is Exponential, SafeToken {
             return fail(err, FailureInfo.LIQUIDATE_ACCUMULATED_SUPPLY_BALANCE_CALCULATION_FAILED_LIQUIDATOR_COLLATERAL_ASSET);
         }
 
-//================//================//================//================//================//================//================//================
         // We update the protocol's totalSupply for assetCollateral in 2 steps, first by adding target user's accumulated
         // interest and then by adding the liquidator's accumulated interest.
 
