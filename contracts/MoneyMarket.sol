@@ -78,6 +78,10 @@ contract MoneyMarket is Exponential, SafeToken {
       */
     mapping(address => mapping(address => Balance)) public borrowBalances;
 
+    /**
+      * @dev array of accounts who has/had supply or borrow activities with contract
+      */
+    address[] public accounts;
 
     /**
       * @dev Container for per-asset balance sheet and interest rate information written to storage, intended to be stored in a map where the asset address is the key
@@ -955,6 +959,19 @@ contract MoneyMarket is Exponential, SafeToken {
             return fail(err, FailureInfo.SUPPLY_TRANSFER_IN_FAILED);
         }
 
+        // If msg.sender makes the supply/borrow for the first time, add msg.sender to accounts array
+        bool found = false;
+        for (uint j = 0; j < accounts.length; j++) {
+            if (accounts[j] == msg.sender) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            accounts.push(msg.sender);
+        }
+
+
         // Save market updates
         market.blockNumber = getBlockNumber();
         market.totalSupply =  localResults.newTotalSupply;
@@ -1562,6 +1579,8 @@ contract MoneyMarket is Exponential, SafeToken {
         if (err != Error.NO_ERROR) {
             return fail(err, FailureInfo.LIQUIDATE_ACCUMULATED_SUPPLY_BALANCE_CALCULATION_FAILED_BORROWER_COLLATERAL_ASSET);
         }
+//==================//==================//==================//==================//==================//==================//==================//==================//==================
+
 
         // Liquidator may or may not already have some collateral asset.
         // If they do, we need to accumulate interest on it before adding the seized collateral to it.
@@ -1571,6 +1590,7 @@ contract MoneyMarket is Exponential, SafeToken {
             return fail(err, FailureInfo.LIQUIDATE_ACCUMULATED_SUPPLY_BALANCE_CALCULATION_FAILED_LIQUIDATOR_COLLATERAL_ASSET);
         }
 
+//================//================//================//================//================//================//================//================
         // We update the protocol's totalSupply for assetCollateral in 2 steps, first by adding target user's accumulated
         // interest and then by adding the liquidator's accumulated interest.
 
@@ -2039,5 +2059,9 @@ contract MoneyMarket is Exponential, SafeToken {
         emit BorrowTaken(msg.sender, asset, amount, localResults.startingBalance, localResults.borrowAmountWithFee, localResults.userBorrowUpdated);
 
         return uint(Error.NO_ERROR); // success
+    }
+
+    function getAllAccounts() public view returns (address[]) {
+        return accounts;
     }
 }
