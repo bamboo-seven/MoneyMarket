@@ -2058,7 +2058,123 @@ contract MoneyMarket is Exponential, SafeToken {
         return uint(Error.NO_ERROR); // success
     }
 
+    /**
+     * @dev Function to get all accounts that supply asset(s) to the contract
+     */
     function getAllAccounts() public view returns (address[]) {
         return accounts;
+    }
+
+    /**
+    * @dev Function to get maximum amount of specific asset to withdraw , in eth-wei
+    */
+    function getMaxWithdrawAmount(address userAddress, address asset) public view returns (uint) {
+
+        (Error err, uint maxWithdrawValue) = getMaxWithdrawValueInternal(userAddress);
+
+        if (err != Error.NO_ERROR) {
+            return 0;
+        }
+
+        (Error err1, Exp memory assetPrice) = fetchAssetPrice(asset);
+
+        if (err1 != Error.NO_ERROR) {
+            return 0;
+        }
+
+        if (isZeroExp(assetPrice)) {
+            return 0;
+        }
+
+        uint assetPriceMantissa = assetPrice.mantissa;
+
+        // get maximum withdrawable amount of asset
+        (Error err2, uint maxWithdrawAmount) = div(maxWithdrawValue, assetPriceMantissa);
+
+        if (err2 != Error.NO_ERROR) {
+            return 0;
+        }
+
+        uint currentSupplyBalance = getSupplyBalance(userAddress, asset);
+
+        // get the minimum between current supply balance of the asset and the maximum withdrawable amount of the asset
+        return min(currentSupplyBalance, maxWithdrawAmount);
+    }
+
+    /**
+     * @dev Internal function to get maximum withdrawable value, in eth-wei.
+     */
+    function getMaxWithdrawValueInternal(address userAddress) internal view returns (Error, uint) {
+        
+        (Error err, uint supplyValue, uint borrowValue) = calculateAccountValuesInternal(userAddress);
+
+        if (err != Error.NO_ERROR) {
+            return (err, 0);
+        }
+
+        (Error err1, uint mulResult) = mul(borrowValue, collateralRatio.mantissa);
+
+        if (err1 != Error.NO_ERROR) {
+            return (err1, 0);
+        }
+
+        return sub(supplyValue, mulResult);
+    }
+
+    /**
+     * @dev Function to get maximum amount the user can borrow.
+     */
+
+    function getMaxBorrowAmount(address userAddress, address asset) public view returns (uint) {
+
+        (Error err, uint maxBorrowValue) = getMaxBorrowValueInternal(userAddress);
+
+        if (err != Error.NO_ERROR) {
+            return 0;
+        }
+
+        (Error err1, Exp memory assetPrice) = fetchAssetPrice(asset);
+
+        if (err1 != Error.NO_ERROR) {
+            return 0;
+        }
+
+        if (isZeroExp(assetPrice)) {
+            return 0;
+        }
+
+        uint assetPriceMantissa = assetPrice.mantissa;
+
+        (Error err2, uint maxBorrowAmount) = div(maxBorrowValue * 10**18, assetPriceMantissa);
+        
+        if (err2 != Error.NO_ERROR) {
+            return 0;
+        }
+
+
+        Market storage market = markets[asset];
+
+        return min(market.totalSupply, maxBorrowAmount);
+    }
+
+    /**
+     * @dev Internal function to get maximum borrowable value, in eth-wei.
+     */
+    function getMaxBorrowValueInternal(address userAddress) internal view returns(Error, uint) {
+        (Error err, uint supplyValue, uint borrowValue) = calculateAccountValuesInternal(userAddress);
+
+        if (err != Error.NO_ERROR) {
+            return (err, 0);
+        }
+
+        (Error err1, uint divResult) = div(supplyValue, collateralRatio.mantissa);
+
+        if (err1 != Error.NO_ERROR) {
+            return (err1, 0);
+        }
+
+        (Error err2, uint maxBorrowValue) = sub(divResult, borrowValue);
+
+        return (err2, maxBorrowValue);
     }
 }
