@@ -2112,7 +2112,9 @@ contract MoneyMarket is Exponential, SafeToken {
             return (err, 0);
         }
 
-        (Error err1, uint mulResult) = mul(borrowValue, collateralRatio.mantissa);
+        uint truncatedValue = truncate(collateralRatio);
+
+        (Error err1, uint mulResult) = mul(borrowValue, truncatedValue);
 
         if (err1 != Error.NO_ERROR) {
             return (err1, 0);
@@ -2145,7 +2147,7 @@ contract MoneyMarket is Exponential, SafeToken {
 
         uint assetPriceMantissa = assetPrice.mantissa;
 
-        (Error err2, uint maxBorrowAmount) = div(maxBorrowValue * 10**18, assetPriceMantissa);
+        (Error err2, uint maxBorrowAmount) = div(maxBorrowValue, assetPriceMantissa);
         
         if (err2 != Error.NO_ERROR) {
             return 0;
@@ -2167,7 +2169,9 @@ contract MoneyMarket is Exponential, SafeToken {
             return (err, 0);
         }
 
-        (Error err1, uint divResult) = div(supplyValue, collateralRatio.mantissa);
+        uint truncatedValue = truncate(collateralRatio);
+
+        (Error err1, uint divResult) = div(supplyValue, truncatedValue);
 
         if (err1 != Error.NO_ERROR) {
             return (err1, 0);
