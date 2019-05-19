@@ -2181,4 +2181,121 @@ contract MoneyMarket is Exponential, SafeToken {
 
         return (err2, maxBorrowValue);
     }
+
+    function getMaxLiquidateAmount(address targetAccount, address assetBorrow, address assetCollateral, uint requestedAmountClose) public view returns (uint) {
+        if (paused) {
+            return fail(Error.CONTRACT_PAUSED, FailureInfo.LIQUIDATE_CONTRACT_PAUSED);
+        }
+        LiquidateLocalVars memory localResults;
+        // Copy these addresses into the struct for use with `emitLiquidationEvent`
+        // We'll use localResults.liquidator inside this function for clarity vs using msg.sender.
+        localResults.targetAccount = targetAccount;
+        localResults.assetBorrow = assetBorrow;
+        localResults.liquidator = msg.sender;
+        localResults.assetCollateral = assetCollateral;
+
+        Market storage borrowMarket = markets[assetBorrow];
+        Market storage collateralMarket = markets[assetCollateral];
+        Balance storage borrowBalance_TargeUnderwaterAsset = borrowBalances[targetAccount][assetBorrow];
+        Balance storage supplyBalance_TargetCollateralAsset = supplyBalances[targetAccount][assetCollateral];
+
+        // Liquidator might already hold some of the collateral asset
+        Balance storage supplyBalance_LiquidatorCollateralAsset = supplyBalances[localResults.liquidator][assetCollateral];
+
+        Error err;
+
+        (err, localResults.collateralPrice) = fetchAssetPrice(assetCollateral);
+        if(err != Error.NO_ERROR) {
+            return fail(err, FailureInfo.LIQUIDATE_FETCH_ASSET_PRICE_FAILED);
+        }
+
+        (err, localResults.underwaterAssetPrice) = fetchAssetPrice(assetBorrow);
+        // If the price oracle is not set, then we would have failed on the first call to fetchAssetPrice
+        assert(err == Error.NO_ERROR);
+
+        // We calculate newBorrowIndex_UnderwaterAsset and then use it to help calculate currentBorrowBalance_TargetUnderwaterAsset
+        (err, localResults.newBorrowIndex_UnderwaterAsset) = calculateInterestIndex(borrowMarket.borrowIndex, borrowMarket.borrowRateMantissa, borrowMarket.blockNumber, getBlockNumber());
+        if (err != Error.NO_ERROR) {
+            return fail(err, FailureInfo.LIQUIDATE_NEW_BORROW_INDEX_CALCULATION_FAILED_BORROWED_ASSET);
+        }
+
+        (err, localResults.currentBorrowBalance_TargetUnderwaterAsset) = calculateBalance(borrowBalance_TargeUnderwaterAsset.principal, borrowBalance_TargeUnderwaterAsset.interestIndex, localResults.newBorrowIndex_UnderwaterAsset);
+        if (err != Error.NO_ERROR) {
+            return fail(err, FailureInfo.LIQUIDATE_ACCUMULATED_BORROW_BALANCE_CALCULATION_FAILED);
+        }
+
+        // We calculate newSupplyIndex_CollateralAsset and then use it to help calculate currentSupplyBalance_TargetCollateralAsset
+        (err, localResults.newSupplyIndex_CollateralAsset) = calculateInterestIndex(collateralMarket.supplyIndex, collateralMarket.supplyRateMantissa, collateralMarket.blockNumber, getBlockNumber());
+        if (err != Error.NO_ERROR) {
+            return fail(err, FailureInfo.LIQUIDATE_NEW_SUPPLY_INDEX_CALCULATION_FAILED_COLLATERAL_ASSET);
+        }
+
+        (err, localResults.currentSupplyBalance_TargetCollateralAsset) = calculateBalance(supplyBalance_TargetCollateralAsset.principal, supplyBalance_TargetCollateralAsset.interestIndex, localResults.newSupplyIndex_CollateralAsset);
+        if (err != Error.NO_ERROR) {
+            return fail(err, FailureInfo.LIQUIDATE_ACCUMULATED_SUPPLY_BALANCE_CALCULATION_FAILED_BORROWER_COLLATERAL_ASSET);
+        }
+
+        // Liquidator may or may not already have some collateral asset.
+        // If they do, we need to accumulate interest on it before adding the seized collateral to it.
+        // We re-use newSupplyIndex_CollateralAsset calculated above to help calculate currentSupplyBalance_LiquidatorCollateralAsset
+        (err, localResults.currentSupplyBalance_LiquidatorCollateralAsset) = calculateBalance(supplyBalance_LiquidatorCollateralAsset.principal, supplyBalance_LiquidatorCollateralAsset.interestIndex, localResults.newSupplyIndex_CollateralAsset);
+        if (err != Error.NO_ERROR) {
+            return fail(err, FailureInfo.LIQUIDATE_ACCUMULATED_SUPPLY_BALANCE_CALCULATION_FAILED_LIQUIDATOR_COLLATERAL_ASSET);
+        }
+
+        // We update the protocol's totalSupply for assetCollateral in 2 steps, first by adding target user's accumulated
+        // interest and then by adding the liquidator's accumulated interest.
+
+        // Step 1 of 2: We add the target user's supplyCurrent and subtract their checkpointedBalance
+        // (which has the desired effect of adding accrued interest from the target user)
+        (err, localResults.newTotalSupply_ProtocolCollateralAsset) = addThenSub(collateralMarket.totalSupply, localResults.currentSupplyBalance_TargetCollateralAsset, supplyBalance_TargetCollateralAsset.principal);
+        if (err != Error.NO_ERROR) {
+            return fail(err, FailureInfo.LIQUIDATE_NEW_TOTAL_SUPPLY_BALANCE_CALCULATION_FAILED_BORROWER_COLLATERAL_ASSET);
+        }
+
+        // Step 2 of 2: We add the liquidator's supplyCurrent of collateral asset and subtract their checkpointedBalance
+        // (which has the desired effect of adding accrued interest from the calling user)
+        (err, localResults.newTotalSupply_ProtocolCollateralAsset) = addThenSub(localResults.newTotalSupply_ProtocolCollateralAsset, localResults.currentSupplyBalance_LiquidatorCollateralAsset, supplyBalance_LiquidatorCollateralAsset.principal);
+        if (err != Error.NO_ERROR) {
+            return fail(err, FailureInfo.LIQUIDATE_NEW_TOTAL_SUPPLY_BALANCE_CALCULATION_FAILED_LIQUIDATOR_COLLATERAL_ASSET);
+        }
+
+        // We calculate maxCloseableBorrowAmount_TargetUnderwaterAsset, the amount of borrow that can be closed from the target user
+        // This is equal to the lesser of
+        // 1. borrowCurrent; (already calculated)
+        // 2. ONLY IF MARKET SUPPORTED: discountedRepayToEvenAmount:
+        // discountedRepayToEvenAmount=
+        //      shortfall / [Oracle price for the borrow * (collateralRatio - liquidationDiscount - 1)]
+        // 3. discountedBorrowDenominatedCollateral
+        //      [supplyCurrent / (1 + liquidationDiscount)] * (Oracle price for the collateral / Oracle price for the borrow)
+
+        // Here we calculate item 3. discountedBorrowDenominatedCollateral =
+        // [supplyCurrent / (1 + liquidationDiscount)] * (Oracle price for the collateral / Oracle price for the borrow)
+        (err, localResults.discountedBorrowDenominatedCollateral) =
+        calculateDiscountedBorrowDenominatedCollateral(localResults.underwaterAssetPrice, localResults.collateralPrice, localResults.currentSupplyBalance_TargetCollateralAsset);
+        if (err != Error.NO_ERROR) {
+            return fail(err, FailureInfo.LIQUIDATE_BORROW_DENOMINATED_COLLATERAL_CALCULATION_FAILED);
+        }
+
+        if (borrowMarket.isSupported) {
+            // Market is supported, so we calculate item 2 from above.
+            (err, localResults.discountedRepayToEvenAmount) =
+            calculateDiscountedRepayToEvenAmount(targetAccount, localResults.underwaterAssetPrice);
+            if (err != Error.NO_ERROR) {
+                return fail(err, FailureInfo.LIQUIDATE_DISCOUNTED_REPAY_TO_EVEN_AMOUNT_CALCULATION_FAILED);
+            }
+
+            // We need to do a two-step min to select from all 3 values
+            // min1&3 = min(item 1, item 3)
+            localResults.maxCloseableBorrowAmount_TargetUnderwaterAsset = min(localResults.currentBorrowBalance_TargetUnderwaterAsset, localResults.discountedBorrowDenominatedCollateral);
+
+            // min1&3&2 = min(min1&3, 2)
+            localResults.maxCloseableBorrowAmount_TargetUnderwaterAsset = min(localResults.maxCloseableBorrowAmount_TargetUnderwaterAsset, localResults.discountedRepayToEvenAmount);
+        } else {
+            // Market is not supported, so we don't need to calculate item 2.
+            localResults.maxCloseableBorrowAmount_TargetUnderwaterAsset = min(localResults.currentBorrowBalance_TargetUnderwaterAsset, localResults.discountedBorrowDenominatedCollateral);
+        }
+
+        return localResults.maxCloseableBorrowAmount_TargetUnderwaterAsset;
+    }
 }

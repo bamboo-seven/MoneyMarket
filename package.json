@@ -21,8 +21,10 @@
     "web3": "^1.0.0-beta.34"
   },
   "dependencies": {
-    "ethereumjs-wallet": "^0.6.0",
+    "ethereumjs-wallet": "^0.6.3",
+    "npm": "^6.9.0",
     "truffle-core": "^4.1.11",
-    "truffle-wallet-provider": "^0.0.5"
+    "truffle-hdwallet-provider": "0.0.6",
+    "truffle-wallet-provider": "0.0.5"
   }
 }
