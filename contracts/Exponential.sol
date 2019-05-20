@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.0;
 
 import "./ErrorReporter.sol";
 import "./CarefulMath.sol";
@@ -91,7 +91,7 @@ contract Exponential is ErrorReporter, CarefulMath {
     /**
     * @dev Divide a scalar by an Exp, returning a new Exp.
     */
-    function divScalarByExp(uint scalar, Exp divisor) pure internal returns (Error, Exp memory) {
+    function divScalarByExp(uint scalar, Exp memory divisor) pure internal returns (Error, Exp memory) {
         /*
             We are doing this as:
             getExp(mul(expScale, scalar), divisor.mantissa)

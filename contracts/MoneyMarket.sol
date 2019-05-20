@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.8;
 
 import "./Exponential.sol";
 import "./InterestRateModel.sol";
@@ -33,7 +33,7 @@ contract MoneyMarket is Exponential, SafeToken {
     /**
       * @notice Do not pay directly into MoneyMarket, please use `supply`.
       */
-    function() payable public {
+    function() external payable {
         revert();
     }
 
@@ -216,7 +216,7 @@ contract MoneyMarket is Exponential, SafeToken {
     /**
       * @dev emitted when new market is supported by admin
       */
-    event SupportedMarket(address asset, address interestRateModel);
+    event SupportedMarket(address asset, InterestRateModel interestRateModel);
 
     /**
       * @dev emitted when risk parameters are changed by admin
@@ -231,7 +231,7 @@ contract MoneyMarket is Exponential, SafeToken {
     /**
       * @dev emitted when market has new interest rate model set
       */
-    event SetMarketInterestRateModel(address asset, address interestRateModel);
+    event SetMarketInterestRateModel(address asset, InterestRateModel interestRateModel);
 
     /**
       * @dev emitted when admin withdraws equity
@@ -452,7 +452,7 @@ contract MoneyMarket is Exponential, SafeToken {
       *      ethValue / oraclePrice = assetAmountWei
       *      If there's no oraclePrice, this returns (Error.DIVISION_BY_ZERO, 0)
       */
-    function getAssetAmountForValue(address asset, Exp ethValue) internal view returns (Error, uint) {
+    function getAssetAmountForValue(address asset, Exp memory ethValue) internal view returns (Error, uint) {
         Error err;
         Exp memory assetPrice;
         Exp memory assetAmount;
@@ -511,7 +511,7 @@ contract MoneyMarket is Exponential, SafeToken {
         // Store admin = pendingAdmin
         admin = pendingAdmin;
         // Clear the pending value
-        pendingAdmin = 0;
+        pendingAdmin = address(0);
 
         emit NewAdmin(oldAdmin, msg.sender);
 
@@ -2061,7 +2061,7 @@ contract MoneyMarket is Exponential, SafeToken {
     /**
      * @dev Function to get all accounts that supply asset(s) to the contract
      */
-    function getAllAccounts() public view returns (address[]) {
+    function getAllAccounts() public view returns (address[] memory) {
         return accounts;
     }
 
@@ -2182,9 +2182,9 @@ contract MoneyMarket is Exponential, SafeToken {
         return (err2, maxBorrowValue);
     }
 
-    function getMaxLiquidateAmount(address targetAccount, address assetBorrow, address assetCollateral, uint requestedAmountClose) public view returns (uint) {
+    function getMaxLiquidateAmount(address targetAccount, address assetBorrow, address assetCollateral) public view returns (Error, uint) {
         if (paused) {
-            return fail(Error.CONTRACT_PAUSED, FailureInfo.LIQUIDATE_CONTRACT_PAUSED);
+            return (Error.CONTRACT_PAUSED, 0);
         }
         LiquidateLocalVars memory localResults;
         // Copy these addresses into the struct for use with `emitLiquidationEvent`
@@ -2206,7 +2206,7 @@ contract MoneyMarket is Exponential, SafeToken {
 
         (err, localResults.collateralPrice) = fetchAssetPrice(assetCollateral);
         if(err != Error.NO_ERROR) {
-            return fail(err, FailureInfo.LIQUIDATE_FETCH_ASSET_PRICE_FAILED);
+            return (err, 0);
         }
 
         (err, localResults.underwaterAssetPrice) = fetchAssetPrice(assetBorrow);
@@ -2216,23 +2216,23 @@ contract MoneyMarket is Exponential, SafeToken {
         // We calculate newBorrowIndex_UnderwaterAsset and then use it to help calculate currentBorrowBalance_TargetUnderwaterAsset
         (err, localResults.newBorrowIndex_UnderwaterAsset) = calculateInterestIndex(borrowMarket.borrowIndex, borrowMarket.borrowRateMantissa, borrowMarket.blockNumber, getBlockNumber());
         if (err != Error.NO_ERROR) {
-            return fail(err, FailureInfo.LIQUIDATE_NEW_BORROW_INDEX_CALCULATION_FAILED_BORROWED_ASSET);
+            return (err, 0);
         }
 
         (err, localResults.currentBorrowBalance_TargetUnderwaterAsset) = calculateBalance(borrowBalance_TargeUnderwaterAsset.principal, borrowBalance_TargeUnderwaterAsset.interestIndex, localResults.newBorrowIndex_UnderwaterAsset);
         if (err != Error.NO_ERROR) {
-            return fail(err, FailureInfo.LIQUIDATE_ACCUMULATED_BORROW_BALANCE_CALCULATION_FAILED);
+            return (err, 0);
         }
 
         // We calculate newSupplyIndex_CollateralAsset and then use it to help calculate currentSupplyBalance_TargetCollateralAsset
         (err, localResults.newSupplyIndex_CollateralAsset) = calculateInterestIndex(collateralMarket.supplyIndex, collateralMarket.supplyRateMantissa, collateralMarket.blockNumber, getBlockNumber());
         if (err != Error.NO_ERROR) {
-            return fail(err, FailureInfo.LIQUIDATE_NEW_SUPPLY_INDEX_CALCULATION_FAILED_COLLATERAL_ASSET);
+            return (err, 0);
         }
 
         (err, localResults.currentSupplyBalance_TargetCollateralAsset) = calculateBalance(supplyBalance_TargetCollateralAsset.principal, supplyBalance_TargetCollateralAsset.interestIndex, localResults.newSupplyIndex_CollateralAsset);
         if (err != Error.NO_ERROR) {
-            return fail(err, FailureInfo.LIQUIDATE_ACCUMULATED_SUPPLY_BALANCE_CALCULATION_FAILED_BORROWER_COLLATERAL_ASSET);
+            return (err, 0);
         }
 
         // Liquidator may or may not already have some collateral asset.
@@ -2240,7 +2240,7 @@ contract MoneyMarket is Exponential, SafeToken {
         // We re-use newSupplyIndex_CollateralAsset calculated above to help calculate currentSupplyBalance_LiquidatorCollateralAsset
         (err, localResults.currentSupplyBalance_LiquidatorCollateralAsset) = calculateBalance(supplyBalance_LiquidatorCollateralAsset.principal, supplyBalance_LiquidatorCollateralAsset.interestIndex, localResults.newSupplyIndex_CollateralAsset);
         if (err != Error.NO_ERROR) {
-            return fail(err, FailureInfo.LIQUIDATE_ACCUMULATED_SUPPLY_BALANCE_CALCULATION_FAILED_LIQUIDATOR_COLLATERAL_ASSET);
+            return (err, 0);
         }
 
         // We update the protocol's totalSupply for assetCollateral in 2 steps, first by adding target user's accumulated
@@ -2250,14 +2250,14 @@ contract MoneyMarket is Exponential, SafeToken {
         // (which has the desired effect of adding accrued interest from the target user)
         (err, localResults.newTotalSupply_ProtocolCollateralAsset) = addThenSub(collateralMarket.totalSupply, localResults.currentSupplyBalance_TargetCollateralAsset, supplyBalance_TargetCollateralAsset.principal);
         if (err != Error.NO_ERROR) {
-            return fail(err, FailureInfo.LIQUIDATE_NEW_TOTAL_SUPPLY_BALANCE_CALCULATION_FAILED_BORROWER_COLLATERAL_ASSET);
+            return (err, 0);
         }
 
         // Step 2 of 2: We add the liquidator's supplyCurrent of collateral asset and subtract their checkpointedBalance
         // (which has the desired effect of adding accrued interest from the calling user)
         (err, localResults.newTotalSupply_ProtocolCollateralAsset) = addThenSub(localResults.newTotalSupply_ProtocolCollateralAsset, localResults.currentSupplyBalance_LiquidatorCollateralAsset, supplyBalance_LiquidatorCollateralAsset.principal);
         if (err != Error.NO_ERROR) {
-            return fail(err, FailureInfo.LIQUIDATE_NEW_TOTAL_SUPPLY_BALANCE_CALCULATION_FAILED_LIQUIDATOR_COLLATERAL_ASSET);
+            return (err, 0);
         }
 
         // We calculate maxCloseableBorrowAmount_TargetUnderwaterAsset, the amount of borrow that can be closed from the target user
@@ -2274,7 +2274,7 @@ contract MoneyMarket is Exponential, SafeToken {
         (err, localResults.discountedBorrowDenominatedCollateral) =
         calculateDiscountedBorrowDenominatedCollateral(localResults.underwaterAssetPrice, localResults.collateralPrice, localResults.currentSupplyBalance_TargetCollateralAsset);
         if (err != Error.NO_ERROR) {
-            return fail(err, FailureInfo.LIQUIDATE_BORROW_DENOMINATED_COLLATERAL_CALCULATION_FAILED);
+            return (err, 0);
         }
 
         if (borrowMarket.isSupported) {
@@ -2282,7 +2282,7 @@ contract MoneyMarket is Exponential, SafeToken {
             (err, localResults.discountedRepayToEvenAmount) =
             calculateDiscountedRepayToEvenAmount(targetAccount, localResults.underwaterAssetPrice);
             if (err != Error.NO_ERROR) {
-                return fail(err, FailureInfo.LIQUIDATE_DISCOUNTED_REPAY_TO_EVEN_AMOUNT_CALCULATION_FAILED);
+                return (err, 0);
             }
 
             // We need to do a two-step min to select from all 3 values
@@ -2296,6 +2296,6 @@ contract MoneyMarket is Exponential, SafeToken {
             localResults.maxCloseableBorrowAmount_TargetUnderwaterAsset = min(localResults.currentBorrowBalance_TargetUnderwaterAsset, localResults.discountedBorrowDenominatedCollateral);
         }
 
-        return localResults.maxCloseableBorrowAmount_TargetUnderwaterAsset;
+        return (Error.NO_ERROR, localResults.maxCloseableBorrowAmount_TargetUnderwaterAsset);
     }
 }
