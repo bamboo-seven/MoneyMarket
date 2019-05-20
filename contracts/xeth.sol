@@ -1,6 +1,6 @@
 //XETH
 
-pragma solidity ^0.5.0;
+pragma solidity ^0.5.8;
 
 contract XETH9 {
     string public name     = "XEther";
