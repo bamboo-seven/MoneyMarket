@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity >=0.4.25 <0.6.0;
 
 /**
   * Our solidity tests are NOT running in isolation. Until we fix that, we need a reliable way to generate
