@@ -11,7 +11,7 @@ contract WrappedEther is StandardToken {
     string public symbol;
     uint8 public decimals;
 
-    constructor(uint256 _initialAmount, string _tokenName, uint8 _decimalUnits, string _tokenSymbol) public {
+    constructor(uint256 _initialAmount, string memory _tokenName, uint8 _decimalUnits, string memory _tokenSymbol) public {
         _initialAmount; // Ignore initial comment
         name = _tokenName;
         symbol = _tokenSymbol;

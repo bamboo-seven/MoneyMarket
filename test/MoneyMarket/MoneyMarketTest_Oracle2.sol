@@ -14,8 +14,8 @@ contract MoneyMarketTest_Oracle2 is MoneyMarketWithPriceTest {
         address asset1 = nextAddress();
         address asset2 = nextAddress();
 
-        assetPrices[asset1].mantissa = 5;
-        assetPrices[asset2].mantissa = 10;
+        testAssetPrices[asset1].mantissa = 5;
+        testAssetPrices[asset2].mantissa = 10;
 
         (Error err1, Exp memory price1) = fetchAssetPrice(asset1);
         Assert.equal(0, uint(err1), "err1");

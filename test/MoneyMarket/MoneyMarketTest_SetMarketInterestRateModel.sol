@@ -15,7 +15,7 @@ contract MoneyMarketTest_SetMarketInterestRateModel is MoneyMarketTest {
 
         assertError(Error.UNAUTHORIZED, Error(_setMarketInterestRateModel(asset, model)), "requires admin rights");
 
-        Assert.equal(markets[asset].interestRateModel, address(0), "market does not get interest rate model");
+        Assert.equal(address(markets[asset].interestRateModel), address(0), "market does not get interest rate model");
     }
 
     function testSetMarketInterestRateModel_Success() public {
@@ -25,7 +25,7 @@ contract MoneyMarketTest_SetMarketInterestRateModel is MoneyMarketTest {
 
         assertNoError(Error(_setMarketInterestRateModel(asset, model)));
 
-        Assert.equal(markets[asset].interestRateModel, model, "market gets interest rate model");
+        Assert.equal(address(markets[asset].interestRateModel), address(model), "market gets interest rate model");
     }
 
     function testSetMarketInterestRateModel_SuccessfulUpdate() public {
@@ -36,11 +36,11 @@ contract MoneyMarketTest_SetMarketInterestRateModel is MoneyMarketTest {
 
         assertNoError(Error(_setMarketInterestRateModel(asset, model1)));
 
-        Assert.equal(markets[asset].interestRateModel, model1, "market gets interest rate model");
+        Assert.equal(address(markets[asset].interestRateModel), address(model1), "market gets interest rate model");
 
         assertNoError(Error(_setMarketInterestRateModel(asset, model2)));
 
-        Assert.equal(markets[asset].interestRateModel, model2, "market gets updated interest rate model");
+        Assert.equal(address(markets[asset].interestRateModel), address(model2), "market gets updated interest rate model");
     }
 
 }

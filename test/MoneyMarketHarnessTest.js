@@ -1,7 +1,7 @@
 "use strict";
 
-const Web3_ = require('web3');
-const web3_ = new Web3_(web3.currentProvider);
+// const Web3_ = require('web3');
+// const web3_ = new Web3_(web3.currentProvider);
 
 const {ErrorEnum, FailureInfoEnum} = require('./ErrorReporter');
 const {assets, bigNums, checksum, gas, getExpMantissa} = require('./Utils');

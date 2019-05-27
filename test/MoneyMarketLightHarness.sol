@@ -24,7 +24,7 @@ contract MoneyMarketLightHarness is MoneyMarket {
       *      Note: If useOracle is true, then we don't use this mapping and instead call the real function of MoneyMarket.
       * map: assetAddress -> Exp
       */
-    mapping (address => Exp) public assetPrices;
+    mapping (address => Exp) public testAssetPrices;
 
     bool useOracle = false;
 
@@ -33,7 +33,7 @@ contract MoneyMarketLightHarness is MoneyMarket {
             return super.fetchAssetPrice(asset);
         }
 
-        return (Error.NO_ERROR, assetPrices[asset]);
+        return (Error.NO_ERROR, testAssetPrices[asset]);
     }
 
     function getCash(address asset) internal view returns (uint) {
@@ -71,7 +71,7 @@ contract MoneyMarketLightHarness is MoneyMarket {
       * the price must be specified as Exp({mantissa: 1133230000000000}).
       */
     function setAssetPriceInternal(address asset, Exp memory price) internal {
-        assetPrices[asset] = price;
+        testAssetPrices[asset] = price;
     }
 
     function harnessSetMaxAssetPrice(address asset) public {

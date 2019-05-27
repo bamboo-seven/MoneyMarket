@@ -31,7 +31,7 @@ contract MoneyMarketTest_SupportMarket2 is MoneyMarketWithPriceTest {
         assertNoError(Error(_supportMarket(asset, InterestRateModel(address(0)))));
 
         Assert.equal(markets[asset].isSupported, true, "market should now be supported");
-        Assert.equal(markets[asset].interestRateModel, address(0), "market has interest rate model set");
+        Assert.equal(address(markets[asset].interestRateModel), address(0), "market has interest rate model set");
     }
 
     function clearCollateralMarkets() internal {

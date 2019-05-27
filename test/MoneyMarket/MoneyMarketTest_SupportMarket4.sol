@@ -30,7 +30,7 @@ contract MoneyMarketTest_SupportMarket4 is MoneyMarketWithPriceTest {
         assertNoError(Error(_supportMarket(asset, InterestRateModel(asset))));
 
         Assert.equal(markets[asset].isSupported, true, "supported again");
-        Assert.equal(markets[asset].interestRateModel, asset, "should still have interest rate model");
+        Assert.equal(address(markets[asset].interestRateModel), asset, "should still have interest rate model");
         Assert.equal(markets[asset].supplyIndex, 5, "supply index unchanged");
         Assert.equal(markets[asset].borrowIndex, 6, "borrow index unchanged");
     }

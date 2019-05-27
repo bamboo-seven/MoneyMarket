@@ -23,7 +23,7 @@ contract MoneyMarketHarness is MoneyMarket {
       *      If useOracle is false (its default), then we use this map for prices.
       * map: assetAddress -> Exp
       */
-    mapping (address => Exp) public assetPrices;
+    mapping (address => Exp) public testAssetPrices;
 
     bool useOracle = false;
 
@@ -32,7 +32,7 @@ contract MoneyMarketHarness is MoneyMarket {
             return super.fetchAssetPrice(asset);
         }
 
-        return (Error.NO_ERROR, assetPrices[asset]);
+        return (Error.NO_ERROR, testAssetPrices[asset]);
     }
 
     function harnessSetCash(address asset, uint cashAmount) public {
@@ -144,7 +144,7 @@ contract MoneyMarketHarness is MoneyMarket {
     }
 
     function harnessGetInterestRateModel(address asset) public view returns (address) {
-        return markets[asset].interestRateModel;
+        return address(markets[asset].interestRateModel);
     }
 
     function harnessSetAssetPrice(address asset, uint priceNum, uint priceDenom) public {
@@ -179,7 +179,7 @@ contract MoneyMarketHarness is MoneyMarket {
       * the price must be specified as Exp({mantissa: 1133230000000000}).
       */
     function setAssetPriceInternal(address asset, Exp memory price) internal {
-        assetPrices[asset] = price;
+        testAssetPrices[asset] = price;
     }
 
     function harnessSetMaxAssetPrice(address asset) public {
