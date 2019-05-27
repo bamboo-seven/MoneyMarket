@@ -3,8 +3,7 @@ pragma solidity >=0.4.25 <0.6.0;
 import "./StandardToken.sol";
 
 /**
-  * @title The Compound Faucet Test Token
-  * @author Compound
+  * @title The Faucet Test Token
   * @notice A simple test token that lets anyone get more of it.
   */
 contract FaucetToken is StandardToken {

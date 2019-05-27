@@ -5,12 +5,6 @@ import "./InterestRateModel.sol";
 import "./PriceOracleInterface.sol";
 import "./SafeToken.sol";
 
-/**
-  * @title The Compound MoneyMarket Contract
-  * @author Compound
-  * @notice The Compound MoneyMarket Contract in the core contract governing
-  *         all accounts in Compound.
-  */
 contract MoneyMarket is Exponential, SafeToken {
 
     uint constant initialInterestIndex = 10 ** 18;
@@ -19,9 +13,6 @@ contract MoneyMarket is Exponential, SafeToken {
     uint constant minimumCollateralRatioMantissa = 11 * (10 ** 17); // 1.1
     uint constant maximumLiquidationDiscountMantissa = (10 ** 17); // 0.1
 
-    /**
-      * @notice `MoneyMarket` is the core Compound MoneyMarket contract
-      */
     constructor() public {
         admin = msg.sender;
         collateralRatio = Exp({mantissa: 2 * mantissaOne});
@@ -637,7 +628,7 @@ contract MoneyMarket is Exponential, SafeToken {
 
 
     /**
-      * @notice Supports a given market (asset) for use with Compound
+      * @notice Supports a given market (asset) for use
       * @dev Admin function to add support for a market
       * @param asset Asset to support; MUST already have a non-zero price set
       * @param interestRateModel InterestRateModel to use for the asset
@@ -682,7 +673,7 @@ contract MoneyMarket is Exponential, SafeToken {
     }
 
     /**
-      * @notice Suspends a given *supported* market (asset) from use with Compound.
+      * @notice Suspends a given *supported* market (asset) from use
       *         Assets in this state do count for collateral, but users may only withdraw, payBorrow,
       *         and liquidate the asset. The liquidate function no longer checks collateralization.
       * @dev Admin function to suspend a market
@@ -1661,7 +1652,7 @@ contract MoneyMarket is Exponential, SafeToken {
             return fail(err, FailureInfo.LIQUIDATE_AMOUNT_SEIZE_CALCULATION_FAILED);
         }
 
-        // We are going to ERC-20 transfer closeBorrowAmount_TargetUnderwaterAsset of assetBorrow into Compound
+        // We are going to ERC-20 transfer closeBorrowAmount_TargetUnderwaterAsset of assetBorrow into contract
         // Fail gracefully if asset is not approved or has insufficient balance
         err = checkTransferIn(assetBorrow, localResults.liquidator, localResults.closeBorrowAmount_TargetUnderwaterAsset);
         if (err != Error.NO_ERROR) {

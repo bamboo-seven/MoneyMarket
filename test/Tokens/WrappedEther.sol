@@ -3,8 +3,7 @@ pragma solidity >=0.4.25 <0.6.0;
 import "./StandardToken.sol";
 
 /**
-  * @title The Compound Wrapped Ether Test Token
-  * @author Compound
+  * @title The Wrapped Ether Test Token
   * @notice A simple test token to wrap ether
   */
 contract WrappedEther is StandardToken {

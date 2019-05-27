@@ -1,8 +1,7 @@
 pragma solidity >=0.4.25 <0.6.0;
 
 /**
-  * @title The Compound InterestRateModel Interface
-  * @author Compound
+  * @title InterestRateModel Interface
   * @notice Any interest rate model should derive from this contract.
   * @dev These functions are specifically not marked `pure` as implementations of this
   *      contract may read from storage variables.

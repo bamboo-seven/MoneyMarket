@@ -6,7 +6,6 @@ import "./ErrorReporter.sol";
 
 /**
   * @title Safe Token
-  * @author Compound
   * @notice This is a work in progress.
   */
 contract SafeToken is ErrorReporter {

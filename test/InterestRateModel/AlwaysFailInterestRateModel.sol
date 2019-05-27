@@ -4,7 +4,6 @@ import "../../contracts/InterestRateModel.sol";
 
 /**
   * @title An Interest Rate Model that always fails for tests
-  * @author Compound
   */
 contract AlwaysFailInterestRateModel is InterestRateModel {
 
