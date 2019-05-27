@@ -40,9 +40,9 @@ contract MoneyMarketHarness is MoneyMarket {
     }
 
     function getCash(address asset) internal view returns (uint) {
-        uint override = cashOverrides[asset];
-        if (override > 0) {
-            return override;
+        uint override2 = cashOverrides[asset];
+        if (override2 > 0) {
+            return override2;
         }
         return super.getCash(asset);
     }
