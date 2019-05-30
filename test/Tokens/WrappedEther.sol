@@ -1,10 +1,9 @@
-pragma solidity ^0.4.24;
+pragma solidity >=0.4.25 <0.6.0;
 
 import "./StandardToken.sol";
 
 /**
-  * @title The Compound Wrapped Ether Test Token
-  * @author Compound
+  * @title The Wrapped Ether Test Token
   * @notice A simple test token to wrap ether
   */
 contract WrappedEther is StandardToken {
@@ -12,7 +11,7 @@ contract WrappedEther is StandardToken {
     string public symbol;
     uint8 public decimals;
 
-    constructor(uint256 _initialAmount, string _tokenName, uint8 _decimalUnits, string _tokenSymbol) public {
+    constructor(uint256 _initialAmount, string memory _tokenName, uint8 _decimalUnits, string memory _tokenSymbol) public {
         _initialAmount; // Ignore initial comment
         name = _tokenName;
         symbol = _tokenSymbol;

@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity >=0.4.25 <0.6.0;
 
 import "truffle/Assert.sol";
 import "./MoneyMarketWithPriceTest.sol";
@@ -19,7 +19,7 @@ contract MoneyMarketTest_SupportMarket3 is MoneyMarketWithPriceTest {
         assertError(Error.ASSET_NOT_PRICED, Error(_supportMarket(asset, InterestRateModel(asset))), "expected Error.ASSET_NOT_PRICED");
 
         Assert.equal(markets[asset].isSupported, false, "market should not be supported");
-        Assert.equal(markets[asset].interestRateModel, address(0), "market has no interest rate model set");
+        Assert.equal(address(markets[asset].interestRateModel), address(0), "market has no interest rate model set");
     }
 
     function clearCollateralMarkets() internal {

@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity >=0.4.25 <0.6.0;
 
 import "../contracts/ErrorReporter.sol";
 import "../contracts/MoneyMarket.sol";
@@ -24,7 +24,7 @@ contract MoneyMarketLightHarness is MoneyMarket {
       *      Note: If useOracle is true, then we don't use this mapping and instead call the real function of MoneyMarket.
       * map: assetAddress -> Exp
       */
-    mapping (address => Exp) public assetPrices;
+    mapping (address => Exp) public testAssetPrices;
 
     bool useOracle = false;
 
@@ -33,13 +33,13 @@ contract MoneyMarketLightHarness is MoneyMarket {
             return super.fetchAssetPrice(asset);
         }
 
-        return (Error.NO_ERROR, assetPrices[asset]);
+        return (Error.NO_ERROR, testAssetPrices[asset]);
     }
 
     function getCash(address asset) internal view returns (uint) {
-        uint override = cashOverrides[asset];
-        if (override > 0) {
-            return override;
+        uint override1 = cashOverrides[asset];
+        if (override1 > 0) {
+            return override1;
         }
         return super.getCash(asset);
     }
@@ -71,7 +71,7 @@ contract MoneyMarketLightHarness is MoneyMarket {
       * the price must be specified as Exp({mantissa: 1133230000000000}).
       */
     function setAssetPriceInternal(address asset, Exp memory price) internal {
-        assetPrices[asset] = price;
+        testAssetPrices[asset] = price;
     }
 
     function harnessSetMaxAssetPrice(address asset) public {

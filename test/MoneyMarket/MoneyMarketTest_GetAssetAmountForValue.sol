@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity >=0.4.25 <0.6.0;
 
 import "truffle/Assert.sol";
 import "./MoneyMarketWithPriceTest.sol";
@@ -31,7 +31,7 @@ contract MoneyMarketTest_GetAssetAmountForValue is MoneyMarketWithPriceTest {
         //////////
         // Test 0 eth worth
         asset = nextAddress();
-        assetPrices[asset] = getExpFromRational(1, 5); // 0.2 eth per item
+        testAssetPrices[asset] = getExpFromRational(1, 5); // 0.2 eth per item
         (err, amount) = getAssetAmountForValue(asset, getExpFromRational(0, 1)); // 0 eth worth
         assertNoError(err);
         Assert.equal(0, amount, "should have returned amount 0");
@@ -46,7 +46,7 @@ contract MoneyMarketTest_GetAssetAmountForValue is MoneyMarketWithPriceTest {
         //////////
         // Test truncated rational result, price > 1
         address asset = nextAddress();
-        assetPrices[asset] = getExpFromRational(5333, 1000); // 5.333;
+        testAssetPrices[asset] = getExpFromRational(5333, 1000); // 5.333;
 
         (err, amount) = getAssetAmountForValue(asset, getExpFromRational(1070, 1)); // 1070 eth worth
         assertNoError(err);
@@ -56,7 +56,7 @@ contract MoneyMarketTest_GetAssetAmountForValue is MoneyMarketWithPriceTest {
         //////////
         // Test truncated rational result, price < 1
         asset = nextAddress();
-        assetPrices[asset] = getExpFromRational(45734, 10000000); // 0.0045734
+        testAssetPrices[asset] = getExpFromRational(45734, 10000000); // 0.0045734
         (err, amount) = getAssetAmountForValue(asset, getExpFromRational(1070, 1)); // 1070 eth worth
         assertNoError(err);
         // 1070 / 0.0045734 = 233961.604058249879739, truncated to 233961

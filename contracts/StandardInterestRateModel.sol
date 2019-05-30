@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity >=0.4.25 <0.6.0;
 
 import "./Exponential.sol";
 import "./ErrorReporter.sol";
@@ -6,9 +6,7 @@ import "./CarefulMath.sol";
 import "./InterestRateModel.sol";
 
 /**
-  * @title The Compound Standard Interest Rate Model
-  * @author Compound
-  * @notice See Section 2.4 of the Compound Whitepaper
+  * @title The Standard Interest Rate Model
   */
 contract StandardInterestRateModel is Exponential {
 

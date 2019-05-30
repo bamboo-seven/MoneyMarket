@@ -1,10 +1,9 @@
-pragma solidity ^0.4.24;
+pragma solidity >=0.4.25 <0.6.0;
 
 import "./NonStandardToken.sol";
 
 /**
-  * @title The Compound Faucet Test Token
-  * @author Compound
+  * @title The Faucet Test Token
   * @notice A simple test token that lets anyone get more of it.
   */
 contract FaucetNonStandardToken is NonStandardToken {
@@ -12,7 +11,7 @@ contract FaucetNonStandardToken is NonStandardToken {
     string public symbol;
     uint8 public decimals;
 
-    constructor(uint256 _initialAmount, string _tokenName, uint8 _decimalUnits, string _tokenSymbol) public {
+    constructor(uint256 _initialAmount, string memory _tokenName, uint8 _decimalUnits, string memory _tokenSymbol) public {
         totalSupply_ = _initialAmount;
         balances[msg.sender] = _initialAmount;
         name = _tokenName;

@@ -1,10 +1,9 @@
-pragma solidity ^0.4.24;
+pragma solidity >=0.4.25 <0.6.0;
 
 import "./FixedInterestRateModel.sol";
 
 /**
   * @title A Fixed Interest Rate Model with default rates for testing
-  * @author Compound
   * @notice Defaults supply rates as 10% per block and borrow at 50% per block for testing
   */
 contract SimpleInterestRateModel is FixedInterestRateModel {

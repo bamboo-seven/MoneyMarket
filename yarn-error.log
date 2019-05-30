@@ -28,15 +28,13 @@ Trace:
 
 npm manifest: 
   {
-    "name": "compound-money-market",
+    "name": "money-market",
     "version": "0.0.1",
-    "description": "The Compound Money Market",
+    "description": "The Money Market",
     "main": "index.js",
     "scripts": {
       "test": "./node_modules/truffle/build/cli.bundled.js test"
     },
-    "repository": "git@github.com:compound-finance/money-market.git",
-    "author": "Geoffrey Hayes <geoff@compound.finance>, Mason Fischer <mason@compound.finanace>",
     "license": "GPL-3.0-or-later",
     "devDependencies": {
       "bluebird": "^3.5.1",

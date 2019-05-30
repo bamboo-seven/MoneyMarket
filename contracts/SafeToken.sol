@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity >=0.4.25 <0.6.0;
 
 import "./EIP20Interface.sol";
 import "./EIP20NonStandardInterface.sol";
@@ -6,7 +6,6 @@ import "./ErrorReporter.sol";
 
 /**
   * @title Safe Token
-  * @author Compound
   * @notice This is a work in progress.
   */
 contract SafeToken is ErrorReporter {

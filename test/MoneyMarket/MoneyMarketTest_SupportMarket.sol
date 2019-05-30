@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity >=0.4.25 <0.6.0;
 
 import "truffle/Assert.sol";
 import "./MoneyMarketWithPriceTest.sol";
@@ -17,7 +17,7 @@ contract MoneyMarketTest_SupportMarket is MoneyMarketWithPriceTest {
 
         admin = msg.sender;
 
-        validateMarket(asset, 0, false, 0, 0);
+        validateMarket(asset, address(0), false, 0, 0);
         assertNoError(Error(_setAssetPrice(asset, 500)));
 
         assertNoError(Error(_supportMarket(asset, InterestRateModel(asset))));
@@ -37,7 +37,7 @@ contract MoneyMarketTest_SupportMarket is MoneyMarketWithPriceTest {
     function validateMarket(address asset, address intRateModel, bool isSupported, uint supplyIndex, uint borrowIndex) internal {
 
         Assert.equal(markets[asset].isSupported, isSupported, "validateMarket: isSupported");
-        Assert.equal(markets[asset].interestRateModel, intRateModel, "validateMarket: interestRateModel");
+        Assert.equal(address(markets[asset].interestRateModel), address(intRateModel), "validateMarket: interestRateModel");
         Assert.equal(markets[asset].supplyIndex, supplyIndex, "validateMarket: supplyIndex");
         Assert.equal(markets[asset].borrowIndex, borrowIndex, "validateMarket: borrowIndex");
     }

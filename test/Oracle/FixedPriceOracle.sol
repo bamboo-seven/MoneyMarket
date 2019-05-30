@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity >=0.4.25 <0.6.0;
 
 // No imports here because this contract can get moved around
 // by a script for when we deploy it in dev environments.

@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity >=0.4.25 <0.6.0;
 
 import "truffle/Assert.sol";
 import "./MoneyMarketWithPriceTest.sol";
@@ -25,11 +25,11 @@ contract MoneyMarketTest_CalculateDiscountedRepayToEvenAmount2 is MoneyMarketWit
 
         borrowBalances[userAddress][assetBorrow].interestIndex = 1;
         borrowBalances[userAddress][assetBorrow].principal = 50;
-        assetPrices[assetBorrow] = Exp({mantissa: 2 * mantissaOne});
+        testAssetPrices[assetBorrow] = Exp({mantissa: 2 * mantissaOne});
 
         supplyBalances[userAddress][assetCollateral].interestIndex = 1;
         supplyBalances[userAddress][assetCollateral].principal = 10;
-        assetPrices[assetCollateral] = Exp({mantissa: 3 * mantissaOne});
+        testAssetPrices[assetCollateral] = Exp({mantissa: 3 * mantissaOne});
 
         markets[assetBorrow].isSupported = true;
         markets[assetBorrow].supplyIndex = 1;
@@ -45,7 +45,7 @@ contract MoneyMarketTest_CalculateDiscountedRepayToEvenAmount2 is MoneyMarketWit
         markets[assetCollateral].borrowRateMantissa = 0;
         markets[assetCollateral].blockNumber = 1;
 
-        (Error err, uint result) = calculateDiscountedRepayToEvenAmount(userAddress, assetPrices[assetBorrow]);
+        (Error err, uint result) = calculateDiscountedRepayToEvenAmount(userAddress, testAssetPrices[assetBorrow]);
         assertZero(result, "default value");
 
         assertError(Error.INTEGER_UNDERFLOW, err, "should cause underflow when collateral ratio < liquidation discount");
@@ -67,11 +67,11 @@ contract MoneyMarketTest_CalculateDiscountedRepayToEvenAmount2 is MoneyMarketWit
 
         borrowBalances[userAddress][assetBorrow].interestIndex = 1;
         borrowBalances[userAddress][assetBorrow].principal = 50;
-        assetPrices[assetBorrow] = Exp({mantissa: 2 * mantissaOne});
+        testAssetPrices[assetBorrow] = Exp({mantissa: 2 * mantissaOne});
 
         supplyBalances[userAddress][assetCollateral].interestIndex = 1;
         supplyBalances[userAddress][assetCollateral].principal = 10;
-        assetPrices[assetCollateral] = Exp({mantissa: 3 * mantissaOne});
+        testAssetPrices[assetCollateral] = Exp({mantissa: 3 * mantissaOne});
 
         markets[assetBorrow].isSupported = true;
         markets[assetBorrow].supplyIndex = 1;
@@ -87,7 +87,7 @@ contract MoneyMarketTest_CalculateDiscountedRepayToEvenAmount2 is MoneyMarketWit
         markets[assetCollateral].borrowRateMantissa = 0;
         markets[assetCollateral].blockNumber = 1;
 
-        (Error err, uint result) = calculateDiscountedRepayToEvenAmount(userAddress, assetPrices[assetBorrow]);
+        (Error err, uint result) = calculateDiscountedRepayToEvenAmount(userAddress, testAssetPrices[assetBorrow]);
         assertZero(result, "default value");
 
         assertError(Error.INTEGER_UNDERFLOW, err, "should cause underflow when collateral ratio - liquidation discount < 1");
@@ -111,10 +111,10 @@ contract MoneyMarketTest_CalculateDiscountedRepayToEvenAmount2 is MoneyMarketWit
 
         // Setup failure
         // Set a price for the borrowed asset very low and discount high so borrowed asset price truncates to zero when discounted
-        assetPrices[assetBorrow] = Exp({mantissa: 1}); //address => Exp
+        testAssetPrices[assetBorrow] = Exp({mantissa: 1}); //address => Exp
         liquidationDiscount = Exp({mantissa: 10**17});
 
-        (Error err, uint result) = calculateDiscountedRepayToEvenAmount(userAddress, assetPrices[assetBorrow]);
+        (Error err, uint result) = calculateDiscountedRepayToEvenAmount(userAddress, testAssetPrices[assetBorrow]);
         assertZero(result, "default value");
 
         assertError(Error.DIVISION_BY_ZERO, err, "should cause division by zero when tiny borrow asset price discounts to zero");

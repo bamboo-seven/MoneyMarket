@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity >=0.4.25 <0.6.0;
 
 import "truffle/Assert.sol";
 import "./MoneyMarketWithPriceTest.sol";
@@ -24,11 +24,11 @@ contract MoneyMarketTest_CalculateDiscountedRepayToEvenAmount is MoneyMarketWith
 
         borrowBalances[userAddress][assetBorrow].interestIndex = 1;
         borrowBalances[userAddress][assetBorrow].principal = 50;
-        assetPrices[assetBorrow] = Exp({mantissa: 2 * mantissaOne});
+        testAssetPrices[assetBorrow] = Exp({mantissa: 2 * mantissaOne});
 
         supplyBalances[userAddress][assetCollateral].interestIndex = 1;
         supplyBalances[userAddress][assetCollateral].principal = 10;
-        assetPrices[assetCollateral] = Exp({mantissa: 3 * mantissaOne});
+        testAssetPrices[assetCollateral] = Exp({mantissa: 3 * mantissaOne});
 
         markets[assetBorrow].isSupported = true;
         markets[assetBorrow].supplyIndex = 1;
@@ -44,7 +44,7 @@ contract MoneyMarketTest_CalculateDiscountedRepayToEvenAmount is MoneyMarketWith
         markets[assetCollateral].borrowRateMantissa = 0;
         markets[assetCollateral].blockNumber = 1;
 
-        (Error err, uint result) = calculateDiscountedRepayToEvenAmount(userAddress, assetPrices[assetBorrow]);
+        (Error err, uint result) = calculateDiscountedRepayToEvenAmount(userAddress, testAssetPrices[assetBorrow]);
 
         // shortfall = abs((10 * 3) - (50 * 2 * 2)) = 170
         // 170 / 2 = 85
@@ -68,11 +68,11 @@ contract MoneyMarketTest_CalculateDiscountedRepayToEvenAmount is MoneyMarketWith
 
         borrowBalances[userAddress][assetBorrow].interestIndex = 1;
         borrowBalances[userAddress][assetBorrow].principal = 50;
-        assetPrices[assetBorrow] = Exp({mantissa: 2 * mantissaOne});
+        testAssetPrices[assetBorrow] = Exp({mantissa: 2 * mantissaOne});
 
         supplyBalances[userAddress][assetCollateral].interestIndex = 1;
         supplyBalances[userAddress][assetCollateral].principal = 10;
-        assetPrices[assetCollateral] = Exp({mantissa: 3 * mantissaOne});
+        testAssetPrices[assetCollateral] = Exp({mantissa: 3 * mantissaOne});
 
         markets[assetBorrow].isSupported = true;
         markets[assetBorrow].supplyIndex = 1;
@@ -88,7 +88,7 @@ contract MoneyMarketTest_CalculateDiscountedRepayToEvenAmount is MoneyMarketWith
         markets[assetCollateral].borrowRateMantissa = 0;
         markets[assetCollateral].blockNumber = 1;
 
-        (Error err, uint result) = calculateDiscountedRepayToEvenAmount(userAddress, assetPrices[assetBorrow]);
+        (Error err, uint result) = calculateDiscountedRepayToEvenAmount(userAddress, testAssetPrices[assetBorrow]);
 
         // shortfall = abs((10 * 3) - (50 * 2 * 2)) = 170
         // 170 / 2 = 85

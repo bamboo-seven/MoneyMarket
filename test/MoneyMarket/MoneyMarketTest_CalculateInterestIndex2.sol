@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity >=0.4.25 <0.6.0;
 
 import "truffle/Assert.sol";
 import "./MoneyMarketTest.sol";
@@ -24,7 +24,6 @@ contract MoneyMarketTest_CalculateInterestIndex2 is MoneyMarketTest {
         Assert.equal(12891171993900000000, newInterestIndex, "should have correct index");
     }
 
-    // https://github.com/compound-finance/money-market/wiki/Back-of-the-Envelope-Numbers
     function testCalculateInterestIndex_BackOfEnvelopeSmallInterest() public {
         (Error err0, Exp memory interestRate) = getExp(1, 210240000); // 1% (.01) annual interest / 2102400 blocks per year
         assertNoError(err0);
@@ -41,7 +40,6 @@ contract MoneyMarketTest_CalculateInterestIndex2 is MoneyMarketTest {
         Assert.equal(1000000004756468797, newInterestIndex, "should have correct index");
     }
 
-    // https://github.com/compound-finance/money-market/wiki/Back-of-the-Envelope-Numbers
     function testCalculateInterestIndex_BackOfEnvelopeLargeInterest() public {
         (Error err0, Exp memory interestRate) = getExp(1, 2102400); // 100% (1.0) annual interest / 2102400 blocks per year
         assertNoError(err0);
