@@ -4,7 +4,6 @@ import "../../contracts/InterestRateModel.sol";
 
 /**
   * @title A Fixed Interest Rate Model for tests
-  * @author Compound
   * @notice Interest rates should be scaled by 10e18
   */
 contract FixedInterestRateModel is InterestRateModel {
